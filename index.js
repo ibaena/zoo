@@ -8,7 +8,7 @@ var connection = mysql.createConnection({
 });
 
 prompt.start();
-//prompt.message = '';
+prompt.message = '';
 
 //Zoo Object
 var zoo = {
@@ -27,17 +27,17 @@ var zoo = {
   add : function(input_scope) {
     var currentScope = input_scope;
     console.log('To add an animal to the zoo please fill out the following form for us!');
-    prompt.get(["name", "type", "age"], function(err, result){
-      var query = "INSERT INTO zoo_db(caretaker_id, name, type, age) VALUES (?,?,?,?)";
+    prompt.get(['caretaker_ID','name', 'type', 'age'], function(err, result){
+      var query = "INSERT INTO animals(caretaker_id, name, type, age) VALUES (?,?,?,?)";
       var addAnimal = [result.caretaker_ID, result.name, result.type, result.age];
-      connection.query(query, addAnimal, function(err, result){
+      connection.query(query, addAnimal, function(err, data){
         if(err){ throw err;
-        }console.log(result.name+ 'was added to the zoo!');
+        }console.log(result.name + ' was added to the zoo!');
 
-    });
     currentScope.menu();
     currentScope.promptUser();
-  });
+      });
+    });
   },
   visit : function(){
     console.log("Enter (I): ------> do you know the animal by it's id? We will visit that animal!");
@@ -46,10 +46,8 @@ var zoo = {
     console.log("Enter (C): ------> here's the count for all animals in this one city!");
     console.log("Enter (O): ------> here's the count for all the animals in all locations by the type you specified!");
     console.log("Enter (Q): ------> Quits to the main menu!");
-    currentScope.visit();
-    currentScope.view(currentScope);
   },
-  view : function(){
+  view : function(input_scope){
     var currentScope = input_scope;
     console.log('Please choice what you like to visit!');
     prompt.get(['->','visit'], function(err,result){
@@ -59,7 +57,7 @@ var zoo = {
       }else if (result.visit == "O") {
         currentScope.type(input_scope);
       }else if (result.visit == "I") {
-        currentScope.animId(input_scope);
+        currentScope.animid(input_scope);
       }else if (result.visit == "N") {
         currentScope.name(input_scope)
       }else if (result.visit == "A") {
@@ -122,7 +120,7 @@ var zoo = {
   name : function(input_scope){
     var currentScope = input_scope;
     console.log('Enter the name of the animal you want to visit.');
-    prompt.get(['->','animal_id'], function(err, result){
+    prompt.get(['->','animal_name'], function(err, result){
       var query = 'SELECT * FROM animals WHERE name=?';
       connection.query(query, result.animal_name, function(err, data){
         if(err){ throw err;
@@ -144,7 +142,7 @@ var zoo = {
       connection.query('SELECT COUNT(*) FROM animals', function(err, data){
       if(err){ throw err;
       }
-      console.log('There are' + data[0]['COUNT(*)'] + ' animals in the zoo.\r\n');
+      console.log(data[0]['COUNT(*)'] + ' animals are in the zoo.\r\n');
 
       currentScope.menu();
       currentScope.promptUser();
@@ -153,8 +151,14 @@ var zoo = {
 },
   update : function(input_scope){
     var currentScope = input_scope;
-    prompt.get(['--->','id','new_name','new_age','new_type','new_caretaker_id'],function(err,result){
-      connection.query();
+    prompt.get(['--->','id', 'new_name', 'new_age', 'new_type', 'new_caretaker_id'],function(err,result){
+      var query = 'UPDATE animals SET id=?, caretaker_id=?, name=?, type=?, age=? WHERE id=?';
+      var updateInfo = [result.id, result.new_caretaker_id, result.new_name, result.new_type, result.new_age, result.id];
+      connection.query(query, updateInfo, function(err, data){
+        if(err){ throw err
+        }console.log('Table Updated Success!');
+      });
+
       currentScope.menu();
       currentScope.promptUser();
     });
@@ -163,7 +167,7 @@ var zoo = {
     var currentScope = input_scope;
     prompt.get(['->','animal_id'],function(err,result){
       var query = 'DELETE FROM animals WHERE id=?';
-      connection.query(query, result.animal_id, function(err, res){
+      connection.query(query, result.animal_id, function(err, data){
         if(err){ throw err; }
 
         console.log('Congrats! you have adopted animal #'+result.animal_id+'.');
